@@ -1,0 +1,9 @@
+# Contesto di build del Dockerfile semplice: si esclude tutto e si riammette solo il JAR.
+# "**" esclude ogni file e cartella del contesto.
+**
+# Riammette la cartella app/ (serve per poter riammettere ciò che contiene)...
+!app/
+# ...poi la cartella app/target/...
+!app/target/
+# ...e infine solo il JAR compilato, l'unico file che il Dockerfile copia.
+!app/target/catalogo.jar

@@ -1,0 +1,11 @@
+# Contesto di build del Dockerfile multi-stage: si esclude tutto e si riammettono solo pom.xml e sorgenti.
+# "**" esclude ogni file e cartella del contesto (quindi anche un eventuale app/target/).
+**
+# Riammette la cartella app/ (necessaria per riammettere ciò che contiene).
+!app/
+# Riammette il file di build Maven.
+!app/pom.xml
+# Riammette la cartella dei sorgenti...
+!app/src/
+# ...e tutto il suo contenuto, test compresi.
+!app/src/**
