@@ -1,0 +1,54 @@
+# Build S2I di Catalogo dal repository personale openshift-labs (pubblico).
+# Prima di applicarla sostituisci UTENTE-GITHUB con il tuo nome utente GitHub:
+# lo fa il comando sed della scheda di laboratorio.
+# Versione dell'API e tipo di oggetto: una BuildConfig descrive come costruire un'immagine.
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  # Nome della BuildConfig.
+  name: catalogo-git
+  labels:
+    # Etichetta che raggruppa gli oggetti dell'applicazione Catalogo.
+    app: catalogo
+spec:
+  # Da dove arriva il codice sorgente.
+  source:
+    # Il sorgente è un repository Git.
+    type: Git
+    git:
+      # Indirizzo del repository (da personalizzare con il tuo utente).
+      uri: https://github.com/UTENTE-GITHUB/openshift-labs.git
+      # Ramo da cui costruire.
+      ref: main
+    contextDir: catalogo            # codice di Catalogo: cartella stabile per tutto il corso (D20)
+  # Come costruire: strategia Source-to-Image (S2I).
+  strategy:
+    type: Source
+    sourceStrategy:
+      # Immagine "builder" che contiene Java 17 e Maven.
+      from:
+        kind: DockerImage
+        name: registry.access.redhat.com/ubi9/openjdk-17:latest
+      # Variabili d'ambiente passate al builder.
+      env:
+        # Argomenti di Maven: -B non interattivo, -e mostra gli errori completi, clean verify ricostruisce ed esegue i test (-DskipTests=false li mantiene attivi).
+        - name: MAVEN_ARGS
+          value: "-B -e clean verify -DskipTests=false"
+        # Memoria massima della JVM di Maven: 512 MB, per restare nei limiti della build.
+        - name: MAVEN_OPTS
+          value: "-Xmx512m"
+  # Dove va l'immagine prodotta.
+  output:
+    to:
+      kind: ImageStreamTag
+      name: catalogo:git               # stesso ImageStream della UD02, tag diverso
+  # Risorse concesse al pod di build: richiesta (minimo garantito) e limite (massimo).
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: "1"
+      memory: 1Gi
+  triggers: []                         # nessuna build automatica: si avvia con oc start-build
+  runPolicy: Serial                    # le build della stessa BuildConfig non si sovrappongono

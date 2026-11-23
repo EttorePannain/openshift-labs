@@ -1,0 +1,24 @@
+# UD01 · Dockerfile multi-stage: il primo stage compila e testa, il secondo contiene solo ciò che serve per eseguire.
+# Stage 1 (nome "build"): immagine con Maven e JDK 17, usata solo per costruire il JAR e poi scartata.
+FROM maven:3.9-eclipse-temurin-17 AS build
+# Cartella di lavoro dello stage di build.
+WORKDIR /work
+# Copia prima solo il pom.xml: le dipendenze si scaricano in un livello a parte e restano in cache se i sorgenti cambiano.
+COPY app/pom.xml ./pom.xml
+# Copia i sorgenti dell'applicazione e dei test.
+COPY app/src/ ./src/
+# Compila, esegue i test (CatalogRulesTest) e crea il JAR. -B: output non interattivo; -ntp: niente log di avanzamento dei download; clean verify: ricostruisce da zero e verifica.
+RUN mvn -B -ntp clean verify
+
+# Stage 2 (immagine finale): solo il runtime Java 17, senza Maven né sorgenti.
+FROM eclipse-temurin:17-jre
+# Cartella di lavoro dell'immagine finale.
+WORKDIR /opt/catalogo
+# Prende dallo stage "build" soltanto il JAR già compilato e verificato.
+COPY --from=build /work/target/catalogo.jar ./catalogo.jar
+# Esegue il processo come utente non root (UID 1001).
+USER 1001
+# Documenta la porta su cui l'applicazione ascolta.
+EXPOSE 8080
+# Comando di avvio: java -jar, in forma a lista (nessuna shell intermedia).
+ENTRYPOINT ["java","-jar","/opt/catalogo/catalogo.jar"]
