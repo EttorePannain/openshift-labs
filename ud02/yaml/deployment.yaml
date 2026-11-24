@@ -1,0 +1,46 @@
+# UD02 · Deployment di Catalogo: avvia l'applicazione costruita nella UD01.
+# Versione dell'API e tipo: un Deployment mantiene in esecuzione il numero voluto di Pod.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  # Nome del Deployment.
+  name: catalogo
+  # Etichette del Deployment, per ritrovarlo (oc get -l app=catalogo).
+  labels:
+    app: catalogo
+spec:
+  # Numero di Pod desiderati.
+  replicas: 1
+  # Quali Pod appartengono a questo Deployment: quelli con l'etichetta app=catalogo.
+  selector:
+    matchLabels:
+      app: catalogo
+  # Modello con cui il Deployment crea i Pod.
+  template:
+    metadata:
+      # Etichette dei Pod: devono corrispondere al selettore qui sopra.
+      labels:
+        app: catalogo
+    spec:
+      # Contenitori del Pod: qui ce n'è uno solo.
+      containers:
+        # Nome del container.
+        - name: catalogo
+          # Immagine: il nome dell'ImageStream; OpenShift lo risolve nell'immagine con digest (lookup locale). Chi usa oc set image può sostituirla.
+          image: catalogo:latest
+          # Porte del container.
+          ports:
+            # Nome della porta, per i riferimenti successivi (Service, probe).
+            - name: http
+              # Porta su cui l'applicazione ascolta nel container.
+              containerPort: 8080
+          # Risorse del container.
+          resources:
+            # Richieste: minimo garantito, usato dallo scheduler per scegliere il nodo (100 millicore di CPU, 256 MiB di memoria).
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            # Limiti: massimo consentito; oltre la memoria il container viene terminato (1 CPU, 1 GiB).
+            limits:
+              cpu: "1"
+              memory: 1Gi

@@ -1,0 +1,44 @@
+# UD02 · ImageStream e BuildConfig di Catalogo: dove finisce l'immagine e come la si costruisce.
+# Si applica con oc apply: si può ripetere senza errori «already exists».
+# Versione dell'API e tipo: ImageStream, l'elenco dei tag dell'immagine nel registry interno.
+apiVersion: image.openshift.io/v1
+kind: ImageStream
+metadata:
+  # Nome dell'ImageStream: l'immagine sarà catalogo:latest.
+  name: catalogo
+  # Etichette per ritrovare gli oggetti (oc get -l app=catalogo).
+  labels:
+    app: catalogo
+spec:
+  # Lookup locale: un Deployment dello stesso progetto può scrivere image: catalogo:latest e OpenShift lo risolve nell'immagine con il suo digest.
+  lookupPolicy:
+    local: true
+# Separatore: secondo oggetto nello stesso file.
+---
+# Versione dell'API e tipo: BuildConfig, la ricetta di una build.
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  # Nome della BuildConfig, usato da oc start-build catalogo.
+  name: catalogo
+  # Etichette per ritrovare gli oggetti.
+  labels:
+    app: catalogo
+spec:
+  # Sorgente: binaria, cioè i file arrivano dal tuo PC con oc start-build --from-dir.
+  source:
+    type: Binary
+  # Strategia di build.
+  strategy:
+    # Si costruisce con un Dockerfile.
+    type: Docker
+    dockerStrategy:
+      # Immagine di base: sostituisce la riga FROM del Dockerfile con il runtime Java 17 di Red Hat.
+      from:
+        kind: DockerImage
+        name: registry.access.redhat.com/ubi9/openjdk-17-runtime:latest
+  # Destinazione: il tag latest dell'ImageStream catalogo.
+  output:
+    to:
+      kind: ImageStreamTag
+      name: catalogo:latest
