@@ -1,0 +1,69 @@
+# SOLO LETTURA: non applicare questo file al cluster.
+# Serve nel UD03 per riconoscere i campi che distinguono uno StatefulSet da un Deployment.
+# Primo oggetto: il Service headless che dà un nome DNS stabile a ogni replica.
+apiVersion: v1
+kind: Service
+metadata:
+  name: archivio
+# Specifica del Service.
+spec:
+  clusterIP: None          # Service headless: nessun bilanciamento, un nome DNS per replica
+  # Seleziona i Pod con etichetta app=archivio.
+  selector:
+    app: archivio
+  # Porte esposte dal Service.
+  ports:
+    # Nome della porta.
+    - name: tcp
+      # Porta del Service (5432, quella di un database).
+      port: 5432
+# Separatore: da qui comincia il secondo oggetto del file.
+---
+# Secondo oggetto: lo StatefulSet, che dà ai Pod identità e volumi stabili.
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: archivio
+# Specifica dello StatefulSet.
+spec:
+  serviceName: archivio    # collega lo StatefulSet al Service headless
+  # Numero di repliche: i Pod si chiameranno archivio-0 e archivio-1.
+  replicas: 2
+  # Selettore dei Pod gestiti.
+  selector:
+    matchLabels:
+      app: archivio
+  # Modello dei Pod.
+  template:
+    metadata:
+      labels:
+        app: archivio
+    spec:
+      # Contenitori del Pod.
+      containers:
+        - name: archivio
+          # Immagine segnaposto: l'esempio è di sola lettura.
+          image: <IMMAGINE_DI_ESEMPIO>
+          # Porte del container.
+          ports:
+            - name: tcp
+              containerPort: 5432
+          # Montaggi dei volumi nel container.
+          volumeMounts:
+            # Nome del volume (corrisponde al claim sotto).
+            - name: dati
+              # Cartella del container in cui compare il volume.
+              mountPath: /var/lib/dati
+  volumeClaimTemplates:    # un volume per ciascuna replica
+    # Per ogni replica crea un PersistentVolumeClaim con questo modello.
+    - metadata:
+        # Metadati del claim.
+        name: dati
+      # Specifica del claim.
+      spec:
+        # Modalità di accesso: ReadWriteOnce, montabile in scrittura da un solo nodo alla volta.
+        accessModes: ["ReadWriteOnce"]
+        # Spazio richiesto.
+        resources:
+          requests:
+            storage: 1Gi
