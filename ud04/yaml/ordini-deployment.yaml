@@ -1,0 +1,49 @@
+# UD04 · Deployment di Ordini: il servizio che chiama Catalogo.
+# Versione dell'API e tipo: un Deployment mantiene in esecuzione il numero voluto di Pod.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  # Nome del Deployment.
+  name: ordini
+  # Etichette del Deployment.
+  labels:
+    app: ordini
+spec:
+  # Numero di Pod desiderati.
+  replicas: 1
+  # Pod gestiti: quelli con etichetta app=ordini.
+  selector:
+    matchLabels:
+      app: ordini
+  # Modello con cui si creano i Pod.
+  template:
+    metadata:
+      # Etichette dei Pod: devono corrispondere al selettore.
+      labels:
+        app: ordini
+    spec:
+      # Contenitori del Pod.
+      containers:
+        # Nome del container.
+        - name: ordini
+          image: ordini:da-impostare   # lo sostituisce il comando oc set image della scheda
+          # Variabili d'ambiente del container.
+          env:
+            - name: CATALOGO_URL          # nome del Service di Catalogo, porta 80
+              value: http://catalogo
+          # Porte del container.
+          ports:
+            # Nome della porta.
+            - name: http
+              # Porta su cui l'applicazione ascolta.
+              containerPort: 8080
+          # Risorse del container.
+          resources:
+            # Richieste: minimo garantito, usato dallo scheduler (100 millicore, 256 MiB).
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            # Limiti: massimo consentito (1 CPU, 1 GiB).
+            limits:
+              cpu: "1"
+              memory: 1Gi

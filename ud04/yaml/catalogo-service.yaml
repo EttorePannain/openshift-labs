@@ -1,0 +1,26 @@
+# UD04 · Service di Catalogo: nome DNS stabile e bilanciamento tra i Pod.
+# Versione dell'API e tipo: un Service dà un nome DNS e un indirizzo stabili ai Pod che lo compongono.
+apiVersion: v1
+kind: Service
+metadata:
+  # Nome del Service: è anche il nome DNS interno (http://catalogo).
+  name: catalogo
+  # Etichetta dell'applicazione.
+  labels:
+    app: catalogo
+spec:
+  # ClusterIP: indirizzo raggiungibile solo dentro il cluster.
+  type: ClusterIP
+  # Inoltra il traffico ai Pod con l'etichetta app=catalogo.
+  selector:
+    app: catalogo
+  # Porte del Service.
+  ports:
+    # Nome della porta, richiamato dalla Route.
+    - name: http
+      # Porta su cui il Service ascolta (80).
+      port: 80
+      # Porta del container a cui inoltra (8080).
+      targetPort: 8080
+      # Protocollo di trasporto.
+      protocol: TCP

@@ -1,0 +1,21 @@
+<!-- Radice del progetto Maven; xmlns/xsi indicano lo schema XML. -->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <!-- Versione del formato del file pom.xml. -->
+  <modelVersion>4.0.0</modelVersion>
+  <!-- Stessa versione di Spring Boot e stesse dipendenze di Catalogo: Maven le ha già nella cache locale. -->
+  <parent><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-parent</artifactId><version>4.0.8</version><relativePath/></parent>
+  <!-- Identità del progetto: gruppo, nome e versione. -->
+  <groupId>it.lab</groupId><artifactId>ordini</artifactId><version>1.0.0</version>
+  <!-- Versione di Java usata per compilare: 17. -->
+  <properties><java.version>17</java.version></properties>
+  <dependencies>
+    <!-- Starter web: server HTTP e API REST. -->
+    <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-webmvc</artifactId></dependency>
+    <!-- Actuator: endpoint health e info, usati dalle probe. -->
+    <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-actuator</artifactId></dependency>
+    <!-- Librerie di test (JUnit): scope test, non entrano nel JAR. -->
+    <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-test</artifactId><scope>test</scope></dependency>
+  </dependencies>
+  <!-- finalName: il JAR si chiama ordini.jar; il plugin Spring Boot lo rende eseguibile con java -jar. -->
+  <build><finalName>ordini</finalName><plugins><plugin><groupId>org.springframework.boot</groupId><artifactId>spring-boot-maven-plugin</artifactId></plugin></plugins></build>
+</project>

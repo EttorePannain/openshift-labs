@@ -1,0 +1,29 @@
+# UD04 · Route di Catalogo: rende raggiungibile il Service dall'esterno.
+# Versione dell'API e tipo: una Route (OpenShift) pubblica un Service all'esterno del cluster con un indirizzo HTTP(S).
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  # Nome della Route.
+  name: catalogo
+  # Etichetta dell'applicazione.
+  labels:
+    app: catalogo
+spec:
+  # Destinazione del traffico.
+  to:
+    # La destinazione è un Service.
+    kind: Service
+    # Nome del Service di destinazione.
+    name: catalogo
+    # Peso del traffico verso questa destinazione (100 = tutto).
+    weight: 100
+  # Porta del Service a cui inoltrare.
+  port:
+    # Nome della porta del Service (http, definita nel Service).
+    targetPort: http
+  # Cifratura TLS.
+  tls:
+    # edge: il TLS termina sul router di OpenShift e verso il Pod il traffico viaggia in HTTP.
+    termination: edge
+    # Le richieste in HTTP semplice vengono reindirizzate a HTTPS.
+    insecureEdgeTerminationPolicy: Redirect
